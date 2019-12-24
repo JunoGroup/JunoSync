@@ -1,22 +1,37 @@
 #pragma once
 
+#ifdef linux
+#include <libconfig.h++>
+#endif
+
+#ifdef _WIN32
+#include <Windows.h>
+#include "registry.hpp"
+#endif
+
 #include <boost/filesystem.hpp>
+#include <iostream>
+#include <string>
+#include <map>
 
 #define DEFAULT_CONF_PATH "JunoSync.conf"
+#define CONFIG_KEY L"Software\\Juno\\JunoSync"
 
 namespace JunoSync
 {
     /**
+     * The configuration dictionary
+     * 
+     * It has the following key value settings:
+     *     "port", "18548"
+     */
+    extern std::map<std::string, std::string> CONFIG;
+
+    /**
      * Static class containing Configuration information
      */
-    class Config
+    namespace Config
     {
-    public:
-        /**
-         * The port to serve on
-         */
-        int port;
-
         /**
          * @brief Reads the configuration from filepath and parses it.
          *
@@ -29,14 +44,11 @@ namespace JunoSync
          * 
          * @returns 0b00000001 If critical error, 0, otherwise.
          */
-        static int init(const boost::filesystem::path &confPath = DEFAULT_CONF_PATH);
-
-    private:
-        Config() {}
+        int init(const boost::filesystem::path &confPath = DEFAULT_CONF_PATH);
 
         /**
          * @brief Writes a default config file
          */
-        static void createDefault(const boost::filesystem::path &confPath = DEFAULT_CONF_PATH);
+        static int createDefault(const boost::filesystem::path &confPath = DEFAULT_CONF_PATH);
     };
 }

@@ -1,4 +1,4 @@
-#include <JunoSync/Config.hpp>
+#include "config.hpp"
 
 using namespace JunoSync;
 
