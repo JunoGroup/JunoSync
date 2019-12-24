@@ -4,5 +4,7 @@ using namespace JunoSync;
 
 int main(int argc, char const *argv[])
 {
-	return Config::init();
+	Config::init();
+
+	return 0;
 }
