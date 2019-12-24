@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "stringutils.hpp"
 
 using namespace JunoSync;
 
@@ -57,17 +58,10 @@ int Config::init(const boost::filesystem::path &confPath)
         std::cout << "Reading settings from registry" << std::endl;
         for (const auto &kv: CONFIG)
         {
-            // kv needs to be wstring rather than string so some conversion is
-            // necessary. It is assumed that kv.first and kv.second are ASCII.
-            std::wstring key(kv.first.begin(), kv.first.end());
-            std::copy(kv.first.begin(), kv.first.end(), key.begin());
-            std::wstring value(kv.second.begin(), kv.second.end());
-            std::copy(kv.second.begin(), kv.second.end(), value.begin());
-
             std::wstring strVal;
-            Registry::GetStringRegKey(regHandle, key, strVal, L"");
+            Registry::GetStringRegKey(regHandle, String::s2ws(kv.first), strVal, L"");
 
-            CONFIG[kv.first] = std::string(strVal);
+            CONFIG[kv.first] = String::ws2s(strVal);
         }
         return 0; // TODO: Make this an enum
     }
