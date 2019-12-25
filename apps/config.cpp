@@ -63,6 +63,14 @@ int Config::init(const boost::filesystem::path &confPath)
 
             CONFIG[kv.first] = String::ws2s(strVal);
         }
+
+        DWORD closeErr = RegCloseKey(regHandle);
+        if (closeErr != ERROR_SUCCESS)
+        {
+            // TODO: Use a logging library
+            std::cout << "Could not close registry" << std::endl;
+        }
+
         return 0; // TODO: Make this an enum
     }
 #endif
@@ -95,6 +103,14 @@ int Config::createDefault(const boost::filesystem::path &confPath)
             RegSetValueEx(regHandle, TEXT(kv.first.c_str()), 0, REG_SZ,
                 (LPBYTE)kv.second.c_str(), kv.second.length() + 1);
         }
+
+        DWORD closeErr = RegCloseKey(regHandle);
+        if (closeErr != ERROR_SUCCESS)
+        {
+            // TODO: Use a logging library
+            std::cout << "Could not close registry" << std::endl;
+        }
+
         return 0;
     }
 #endif
