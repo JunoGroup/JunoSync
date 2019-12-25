@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(JunoSync VERSION 0.0.1
                  LANGUAGES C CXX)
+
+set(CMAKE_MODULE_PATH
+    "${PROJECT_SOURCE_DIR}/cmake"
+    ${CMAKE_MODULE_PATH})
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,5 +30,8 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 endif()
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
 add_subdirectory(apps)

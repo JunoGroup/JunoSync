@@ -1,5 +1,6 @@
 #include "config.hpp"
 #include "stringutils.hpp"
+#include "spdlog/spdlog.h"
 
 using namespace JunoSync;
 
@@ -11,26 +12,6 @@ int Config::init(const boost::filesystem::path &confPath)
 {
 // TODO: Write
 #ifdef linux
-    libconfig::Config cfg;
-
-    try
-    {
-        cfg.readFile(confPath);
-    }
-    catch (const libconfig::FileIOException &fioex)
-    {
-        // TODO: Replace cout with a good logging library.
-        // File probably doesn't exist. Try creating a new one
-        std::cout << "Could not open configuration file" << std::endl;
-        Config::createDefault(confPath);
-    }
-    catch (const ParseExpression &pex)
-    {
-        // TODO: Replace cerr with a good logging library.
-        std::cerr << "File " << pex.getFile() << " error on line " <<
-            pex.getLine() << ": " << pex.getError() << std::endl;
-        return 0b00000001; // TODO: Make this an enum
-    }
 #endif
 
 #ifdef _WIN32
@@ -40,26 +21,24 @@ int Config::init(const boost::filesystem::path &confPath)
 
     if (openErr == ERROR_NO_MATCH || openErr == ERROR_FILE_NOT_FOUND)
     {
-        // TODO: Replace this with a logging library
-        std::cout << "The JunoSync key doesn't exist. Creating it." <<
-            std::endl;
+        spdlog::warn("The HKEY_CURRENT_USER\\Software\\Juno\\JunoSync key "
+            "doesn't exist. Creating it.");
         return Config::createDefault();
     }
     else if (openErr != ERROR_SUCCESS)
     {
-        // TODO: Rewrite this with an actual logging library
-        std::cerr << "There has been an error reading the registry." <<
-            std::endl;
-        return 0b00000001; // TODO: Make this an enum
+        spdlog::error("There has been an error opening the "
+            "HKEY_CURRENT_USER\\Software\\Juno\\JunoSync key.");
+        return openErr;
     }
     else
     {
-        // TODO: Replace
-        std::cout << "Reading settings from registry" << std::endl;
+        spdlog::info("Reading configuration from registry.");
         for (const auto &kv: CONFIG)
         {
             std::wstring strVal;
-            Registry::GetStringRegKey(regHandle, String::s2ws(kv.first), strVal, L"");
+            Registry::GetStringRegKey(regHandle,
+                String::s2ws(kv.first), strVal, L"");
 
             CONFIG[kv.first] = String::ws2s(strVal);
         }
@@ -67,11 +46,11 @@ int Config::init(const boost::filesystem::path &confPath)
         DWORD closeErr = RegCloseKey(regHandle);
         if (closeErr != ERROR_SUCCESS)
         {
-            // TODO: Use a logging library
-            std::cout << "Could not close registry" << std::endl;
+            spdlog::error("Could not close registry.");
+            return closeErr;
         }
 
-        return 0; // TODO: Make this an enum
+        return openErr;
     }
 #endif
 }
@@ -89,15 +68,12 @@ int Config::createDefault(const boost::filesystem::path &confPath)
         NULL);
     if (createErr != ERROR_SUCCESS)
     {
-        // TODO: Rewrite with a logging library
-        std::cerr << "Could not create registry key." << std::endl;
-        std::cerr << createErr << std::endl;
+        spdlog::error("Could not create "
+            "HKEY_CURRENT_USER\\Software\\Juno\\JunoSync key");
         return createErr;
     }
     else
     {
-        // TODO: Use a logging library
-        std::cout << "Created default key. Writing to it." << std::endl;
         for (const auto &kv: CONFIG)
         {
             RegSetValueEx(regHandle, TEXT(kv.first.c_str()), 0, REG_SZ,
@@ -107,8 +83,7 @@ int Config::createDefault(const boost::filesystem::path &confPath)
         DWORD closeErr = RegCloseKey(regHandle);
         if (closeErr != ERROR_SUCCESS)
         {
-            // TODO: Use a logging library
-            std::cout << "Could not close registry" << std::endl;
+            spdlog::error("Could not close registry.");
         }
 
         return 0;
