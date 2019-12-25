@@ -29,4 +29,6 @@ if(Boost_FOUND)
     link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
+find_package(spdlog REQUIRED)
+
 add_subdirectory(apps)

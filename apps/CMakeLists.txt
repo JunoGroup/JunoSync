@@ -4,4 +4,4 @@ else()
 	add_executable(JunoSync junosync.cpp config.cpp stringutils.cpp)
 endif()
 
-target_link_libraries(JunoSync Boost::boost)
+target_link_libraries(JunoSync PRIVATE Boost::boost spdlog::spdlog)
